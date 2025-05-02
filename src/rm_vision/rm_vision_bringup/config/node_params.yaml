@@ -1,0 +1,57 @@
+/camera_node:
+  ros__parameters:
+    camera_info_url: package://rm_vision_bringup/config/camera_info.yaml
+    exposure_time: 6000
+    gain: 26.0
+
+/serial_driver:
+  ros__parameters:
+    timestamp_offset: 0.006
+    device_name: /dev/ttyACM0
+    baud_rate: 115200
+    flow_control: none
+    parity: none
+    stop_bits: "1"
+
+/armor_detector:
+  ros__parameters:
+    debug: true
+
+    detect_color: 0                 # 0: red, 1: green
+    binary_thres: 80 
+
+    light.min_ratio: 0.1  
+    armor.min_light_ratio: 0.8 
+
+    classifier_threshold: 0.7    
+    ignore_classes: ["negative"]
+
+/armor_tracker:
+  ros__parameters:
+    target_frame: odom
+    max_armor_distance: 10.0        # 装甲板在水平方向（XOY平面）上的最大允许距离
+
+    ekf:
+      sigma2_q_xyz: 0.05            # EKF 中用于位置和速度的过程噪声协方差参数
+      sigma2_q_yaw: 5.0             # EKF 中用于偏航角的过程噪声协方差参数
+      sigma2_q_r: 70.0              # EKF 中用于旋转半径 r 的过程噪声协方差参数
+
+      sigma2_qacc_xyz: 0.5          # EKF 中用于线性加速度的过程噪声协方差参数
+      sigma2_qacc_yaw: 2.0          # 定义 EKF 中用于偏航角加速度的过程噪声协方差参数
+
+      r_xyz_factor: 3e-3            # EKF 中测量噪声协方差矩阵的位置噪声因子
+      r_yaw: 5e-3                   # EKF 中测量噪声协方差矩阵的偏航角噪声因子
+
+    tracker:
+      max_match_distance: 0.5       # 跟踪器在匹配装甲板时的最大允许距离
+      max_match_yaw_diff: 1.0       # 跟踪器在匹配装甲板时，允许的最大偏航角差值
+
+      tracking_thres: 5             # 跟踪器在跟踪装甲板时，允许的最大匹配次数
+      lost_time_thres: 1.0          # 跟踪器在跟踪装甲板时，允许的最大丢失时间
+
+projectile_solver:
+  ros__parameters:
+    initial_velocity: 15.0      
+    air_friction: 0.019 
+    gravity: 9.81
+    target_frame: "odom"

@@ -1,0 +1,16 @@
+projectile_solver:
+  ros__parameters:
+    initial_velocity: 15.0
+    gravity: 9.81
+    target_frame: "odom"
+    source_frame: "gimbal_link"  # 云台坐标系
+    
+    # 弹丸参数
+    bullet_diameter: 0.017  # 17mm
+    bullet_mass: 0.0032     # 3.2g
+    air_density: 1.225      # kg/m^3
+    drag_coef: 0.47        # 球形弹丸阻力系数
+    
+    # 射击控制参数
+    max_pitch_err: 0.1  # 最大俯仰角误差(rad)
+    max_yaw_err: 0.1    # 最大偏航角误差(rad)
