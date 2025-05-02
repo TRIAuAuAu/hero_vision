@@ -1,0 +1,48 @@
+# ROS 2 Specific
+build/
+install/
+log/
+rcl_interfaces/rcl_interfaces__py.stamp
+rclpy_common/rclpy_common__py.stamp
+rosidl_runtime_py/rosidl_runtime_py__py.stamp
+ament_cmake/ament_cmake__py.stamp
+ament_package/ament_package__py.stamp
+
+# Python Specific (if applicable)
+__pycache__/
+*.pyc
+*.egg-info/
+build/lib*
+build/bdist*
+develop-eggs/
+dist/
+
+# C++ Specific (if applicable)
+build/
+install/
+ament_cmake/install/
+*.so
+*.dylib
+*.o
+*.obj
+*.d
+*.cmake
+CMakeCache.txt
+CMakeFiles/
+
+# IDE Specific
+.vscode/
+.idea/
+
+# OS Specific
+.DS_Store
+Thumbs.db
+
+# Log and Temporary Files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Other
+*.repos
