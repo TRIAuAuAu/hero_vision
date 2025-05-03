@@ -22,6 +22,7 @@ struct ReceivePacket
   float aim_x;
   float aim_y;
   float aim_z;
+  float projectile_speed; // 新增弹速字段
   uint16_t checksum = 0;
 } __attribute__((packed));
 

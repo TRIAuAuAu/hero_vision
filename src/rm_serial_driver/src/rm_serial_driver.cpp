@@ -40,6 +40,7 @@ RMSerialDriver::RMSerialDriver(const rclcpp::NodeOptions & options)
   // Create Publisher
   latency_pub_ = this->create_publisher<std_msgs::msg::Float64>("/latency", 10);
   marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/aiming_point", 10);
+  projectile_speed_pub_ = this->create_publisher<std_msgs::msg::Float64>("/projectile_speed", 10); // 新增：创建弹速发布者
 
   // Detect parameter client
   detector_param_client_ = std::make_shared<rclcpp::AsyncParametersClient>(this, "armor_detector");
@@ -134,6 +135,14 @@ void RMSerialDriver::receiveData()
           // RCLCPP_INFO(get_logger(), "[Receive] yaw %f!", packet.yaw);
 
           // RCLCPP_INFO(get_logger(), "----------------------------");
+          
+          std_msgs::msg ::Float64 speed_msg;
+          speed_msg.data = packet.projectile_speed;
+          projectile_speed_pub_->publish(speed_msg);
+
+          // LOG [Receive] speed
+          // RCLCPP_INFO(get_logger(), "[Receive] speed %.3f m/s!", packet.projectile_speed);
+
 
           if (!initial_set_param_ || packet.detect_color != previous_receive_color_) {
             setParam(rclcpp::Parameter("detect_color", packet.detect_color));

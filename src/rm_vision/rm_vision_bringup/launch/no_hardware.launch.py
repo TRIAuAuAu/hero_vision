@@ -13,7 +13,19 @@ def generate_launch_description():
 
     from common import launch_params, robot_state_publisher, node_params, tracker_node
     from launch_ros.actions import Node
-
+    
+     # ==================== 弹道解算节点配置 ==================== 
+    projectile_solver_node = Node(
+        package='rm_projectile_motion',
+        executable='projectile_solver',
+        name='projectile_solver',
+        parameters=[node_params],  # 使用统一参数文件
+        output='screen',
+        arguments=[
+            '--ros-args',
+            '--log-level', 'projectile_solver:='+launch_params.get('projectile_log_level', 'info')
+        ]
+    )
     detector_node = Node(
         package='armor_detector',
         executable='armor_detector_node',
@@ -28,20 +40,21 @@ def generate_launch_description():
         robot_state_publisher,
         detector_node,
         tracker_node,
+        projectile_solver_node  # 添加弹道解算节点
 
-        # 添加弹道解算节点的启动配置
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([
-                PathJoinSubstitution([
-                    FindPackageShare('rm_projectile_motion'),
-                    'launch',
-                    'solver.launch.py'
-                ])
-            ]),
-            launch_arguments={
-                # 可以在这里覆盖默认参数
-                'initial_velocity': '15.0',
-                'air_friction': '0.001'
-            }.items()
-        ),
+        # # 添加弹道解算节点的启动配置
+        # IncludeLaunchDescription(
+        #     PythonLaunchDescriptionSource([
+        #         PathJoinSubstitution([
+        #             FindPackageShare('rm_projectile_motion'),
+        #             'launch',
+        #             'solver.launch.py'
+        #         ])
+        #     ]),
+        #     launch_arguments={
+        #         # 可以在这里覆盖默认参数
+        #         'initial_velocity': '15.0',
+        #         'air_friction': '0.001'
+        #     }.items()
+        # ),
     ])

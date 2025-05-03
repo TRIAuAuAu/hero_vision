@@ -78,25 +78,34 @@ def generate_launch_description():
         actions=[tracker_node],
     )
 
+    # 添加新的弹道解算节点定义
+    projectile_solver_node = Node(
+        package='rm_projectile_motion',
+        executable='projectile_solver',
+        name='projectile_solver',
+        parameters=[node_params],  # 使用主系统参数文件
+        output='screen'
+    )
+    
     return LaunchDescription([
         robot_state_publisher,
         cam_detector,
         delay_serial_node,
         delay_tracker_node,
-
-        # 添加弹道解算节点的启动配置
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([
-                PathJoinSubstitution([
-                    FindPackageShare('rm_projectile_motion'),
-                    'launch',
-                    'solver.launch.py'
-                ])
-            ]),
-            launch_arguments={
-                # 可以在这里覆盖默认参数
-                'initial_velocity': '15.0',
-                'air_friction': '0.019'
-            }.items()
-        ),
+        projectile_solver_node
+        # # 添加弹道解算节点的启动配置
+        # IncludeLaunchDescription(
+        #     PythonLaunchDescriptionSource([
+        #         PathJoinSubstitution([
+        #             FindPackageShare('rm_projectile_motion'),
+        #             'launch',
+        #             'solver.launch.py'
+        #         ])
+        #     ]),
+        #     launch_arguments={
+        #         # 可以在这里覆盖默认参数
+        #         'initial_velocity': '15.0',
+        #         'air_friction': '0.019'
+        #     }.items()
+        # ),
     ])

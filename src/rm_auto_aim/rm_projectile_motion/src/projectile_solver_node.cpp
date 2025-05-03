@@ -10,7 +10,9 @@ ProjectileSolverNode::ProjectileSolverNode(const rclcpp::NodeOptions & options)
 : Node("projectile_solver", options)
 {
   RCLCPP_INFO(this->get_logger(), "Starting ProjectileSolverNode!");
-  
+
+  use_simple_model_ = declare_parameter("use_simple_model", false); // 默认使用完整模型
+
   initial_vel_ = declare_parameter("initial_velocity", 15.0);
   friction_k_ = declare_parameter("air_friction", 0.019);
   gravity_ = declare_parameter("gravity", 9.81);
@@ -47,8 +49,21 @@ ProjectileSolverNode::ProjectileSolverNode(const rclcpp::NodeOptions & options)
   target_sub_ = create_subscription<auto_aim_interfaces::msg::Target>(
     "/tracker/target", rclcpp::SensorDataQoS(),
     std::bind(&ProjectileSolverNode::targetCallback, this, std::placeholders::_1));
+  // 新增：创建弹速订阅者
+  speed_sub_ = create_subscription<std_msgs::msg::Float64>(
+    "/projectile_speed", 10, // 订阅由 SerialDriver 发布的话题
+    std::bind(&ProjectileSolverNode::speedCallback, this, std::placeholders::_1));
 }
-
+void ProjectileSolverNode::speedCallback(const std_msgs::msg::Float64::SharedPtr msg)
+{
+  // 使用互斥锁保护共享资源
+  std::lock_guard<std::mutex> lock(initial_vel_mutex_);
+  initial_vel_ = msg->data;  // 更新弹速
+  // debug
+  // RCLCPP_DEBUG(
+  //   this->get_logger(),
+  //   "Updated initial velocity: %.3f m/s", initial_vel_);
+}
 void ProjectileSolverNode::targetCallback(const auto_aim_interfaces::msg::Target::SharedPtr msg)
 {
   if (!msg->tracking) {
@@ -100,26 +115,29 @@ void ProjectileSolverNode::targetCallback(const auto_aim_interfaces::msg::Target
 bool ProjectileSolverNode::solveBallistic(
   const Eigen::Vector3d & target_pos, double & pitch, double & yaw)
 {
-  // 近距离使用简化模型，远距离使用复杂模型
-  constexpr double NEAR_DISTANCE = 3.0;  // 3米内用简化模型
+  const bool use_simple_model = use_simple_model_; 
   constexpr double MAX_PITCH = M_PI / 3; // 60度最大仰角
 
   // 局部变量优化
   double x = target_pos.head(2).norm();  // 水平距离
   double y = target_pos.z();             // 垂直高度
-  double v = initial_vel_;
   double g = gravity_;
-  
-  
+
+  double v;
+  {
+    std::lock_guard<std::mutex> lock(initial_vel_mutex_);
+    v = initial_vel_;  // 弹速
+  }
+
   // 初始估计
   pitch = std::atan2(y, x);
-  bool use_simple_model = (x < NEAR_DISTANCE);
 
   // 牛顿迭代法求解
   for(int i = 0;i < 20; i++)
   {
     double cos_pitch = std::cos(pitch);
     double sin_pitch = std::sin(pitch);
+
     double T, dy;
 
     // 是否使用简化模型
@@ -162,6 +180,7 @@ void ProjectileSolverNode::publishMarker(
   [[maybe_unused]] const Eigen::Vector3d & target_pos,
   double pitch, double yaw)
 {
+  const bool use_simple = use_simple_model_;
   visualization_msgs::msg::Marker marker;     // 可视化marker
   marker.header.frame_id = target_frame_;     // 目标坐标系
   marker.header.stamp = this->now();          // 时间戳为当前时间
@@ -175,25 +194,40 @@ void ProjectileSolverNode::publishMarker(
   marker.color.r = 1.0;                       // 红色
   
   // 计算弹道轨迹点
-  double v = initial_vel_;                    
+  double v;
+  {
+    std::lock_guard<std::mutex> lock(initial_vel_mutex_);
+    v = initial_vel_;  // 弹速
+  }
+
   double g = gravity_;
   double dt = 0.01;                          
   double t_max = 3.0;
-  
-  double vx = v * std::cos(pitch);
-  double vy = v * std::sin(pitch);
-  
+  const double k = friction_k_;
+
+  double vx0 = v * std::cos(pitch);
+  double vy0 = v * std::sin(pitch);
+  double x = 0.0, z = 0.0;  // 初始位置
+
   for (double t = 0; t < t_max; t += dt) {
     geometry_msgs::msg::Point p;
     
-    // 使用基本抛物线方程计算轨迹
-    double x = vx * t;
-    double z = vy * t - 0.5 * g * t * t;
-    
-    // 如果弹丸落到地面以下，停止绘制
-    if (z < 0) {
-      break;
+    if (use_simple) {
+      // 无阻力抛物线模型
+       x = vx0 * t;
+       z = vy0 * t - 0.5 * g * t * t;
+    } else {
+      // 解析解来自微分方程：
+      // dvx/dt = -k*vx
+      // dvz/dt = -k*vz - g
+      const double exp_kt = std::exp(-k * t);
+      
+      // 位置分量（积分得到）
+      x = (vx0 / k) * (1 - exp_kt);
+      z = ((vy0 + g/k)/k) * (1 - exp_kt) - (g * t)/k;
+      // 如果弹丸落到地面以下，停止绘制
     }
+    if (z < 0) { break; } 
     
     // 将轨迹点转换到世界坐标系
     p.x = x * std::cos(yaw);

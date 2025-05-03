@@ -1,5 +1,9 @@
 projectile_solver:
   ros__parameters:
+    # 弹道模型选择参数
+    # 是否使用简化弹道模型（true-无阻力模型，false-完整模型）
+    use_simple_model: true  
+    # 物理参数
     initial_velocity: 15.0
     gravity: 9.81
     target_frame: "odom"

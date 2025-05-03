@@ -30,3 +30,12 @@ tracker_node = Node(
     parameters=[node_params],
     ros_arguments=['--log-level', 'armor_tracker:='+launch_params['tracker_log_level']],
 )
+
+# 添加弹道解算节点定义到common.py
+projectile_solver_node = Node(
+    package='rm_projectile_motion',
+    executable='projectile_solver',
+    name='projectile_solver',
+    parameters=[node_params],
+    output='screen'
+)

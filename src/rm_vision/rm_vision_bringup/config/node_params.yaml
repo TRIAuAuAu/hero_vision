@@ -17,7 +17,7 @@
   ros__parameters:
     debug: true
 
-    detect_color: 0                 # 0: red, 1: green
+    detect_color: 0                 # 0: red, 1: blue
     binary_thres: 80 
 
     light.min_ratio: 0.1  
@@ -51,7 +51,10 @@
 
 projectile_solver:
   ros__parameters:
+    use_simple_model: true         # 是否使用简化弹道模型（true-无阻力模型，false-完整模型）        
     initial_velocity: 15.0      
     air_friction: 0.019 
     gravity: 9.81
     target_frame: "odom"
+
+# 验证节点修改：ros2 param get /projectile_solver use_simple_model

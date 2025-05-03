@@ -76,6 +76,8 @@ private:
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr latency_pub_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
 
+  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr projectile_speed_pub_; // 新增：弹速发布者声明
+
   std::thread receive_thread_;
 
   double max_pitch_err_;

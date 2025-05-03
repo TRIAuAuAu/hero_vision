@@ -11,6 +11,9 @@
 #include <auto_aim_interfaces/msg/target.hpp>
 #include <Eigen/Dense>
 
+#include <std_msgs/msg/float64.hpp> // 新增：弹速 
+#include <mutex>                    // 新增：互斥锁
+
 namespace rm_projectile_motion
 {
 
@@ -20,9 +23,13 @@ public:
   explicit ProjectileSolverNode(const rclcpp::NodeOptions & options);
 
 private:
+  bool use_simple_model_; // 新增模型选择参数
+  
   // 订阅目标信息
   rclcpp::Subscription<auto_aim_interfaces::msg::Target>::SharedPtr target_sub_;
-  
+  // 订阅弹速
+  rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr speed_sub_;
+
   // 发布解算结果
   rclcpp::Publisher<geometry_msgs::msg::Point>::SharedPtr solution_pub_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
@@ -34,6 +41,8 @@ private:
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_; // TF广播器
   
   double initial_vel_;   //射速
+  std::mutex initial_vel_mutex_; // 互斥锁，用于保护射速变量
+
   double friction_k_;    //空气阻力系数
   double gravity_;       //重力加速度
   std::string target_frame_;
@@ -53,6 +62,7 @@ private:
   
   // 回调函数
   void targetCallback(const auto_aim_interfaces::msg::Target::SharedPtr msg);
+  void speedCallback(const std_msgs::msg::Float64::SharedPtr msg);  // 新增：弹速回调函数
   bool solveBallistic(const Eigen::Vector3d & target_pos, double & pitch, double & yaw);
   void publishMarker(const Eigen::Vector3d & target_pos, double pitch, double yaw);
   
