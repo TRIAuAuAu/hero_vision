@@ -8,3 +8,9 @@
 ## rm_projectile_motion
 
 考虑了摩擦力，根据华科开源引入摩擦力
+
+从下位机读取弹速
+
+## rm_vision_bringup
+
+重新配置弹道解算节点  
