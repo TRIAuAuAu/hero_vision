@@ -14,7 +14,18 @@ def generate_launch_description():
     from common import launch_params, robot_state_publisher, node_params, tracker_node
     from launch_ros.actions import Node
     
-     # ==================== 弹道解算节点配置 ==================== 
+
+    detector_node = Node(
+        package='armor_detector',
+        executable='armor_detector_node',
+        emulate_tty=True,
+        output='both',
+        parameters=[node_params],
+        arguments=['--ros-args', '--log-level',
+                   'armor_detector:='+launch_params['detector_log_level']],
+    )
+
+    # ==================== 弹道解算节点配置 ==================== 
     projectile_solver_node = Node(
         package='rm_projectile_motion',
         executable='projectile_solver',
@@ -26,16 +37,7 @@ def generate_launch_description():
             '--log-level', 'projectile_solver:='+launch_params.get('projectile_log_level', 'info')
         ]
     )
-    detector_node = Node(
-        package='armor_detector',
-        executable='armor_detector_node',
-        emulate_tty=True,
-        output='both',
-        parameters=[node_params],
-        arguments=['--ros-args', '--log-level',
-                   'armor_detector:='+launch_params['detector_log_level']],
-    )
-
+    
     return LaunchDescription([
         robot_state_publisher,
         detector_node,

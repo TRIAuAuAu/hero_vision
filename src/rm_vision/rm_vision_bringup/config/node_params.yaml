@@ -1,8 +1,8 @@
 /camera_node:
   ros__parameters:
     camera_info_url: package://rm_vision_bringup/config/camera_info.yaml
-    exposure_time: 6000
-    gain: 26.0
+    exposure_time: 8000   # 6000
+    gain: 25.0            # 26.0
 
 /serial_driver:
   ros__parameters:
@@ -51,7 +51,7 @@
 
 projectile_solver:
   ros__parameters:
-    use_simple_model: true         # 是否使用简化弹道模型（true-无阻力模型，false-完整模型）        
+    use_simple_model: false         # 是否使用简化弹道模型（true-无阻力模型，false-完整模型）        
     initial_velocity: 15.0      
     air_friction: 0.019 
     gravity: 9.81

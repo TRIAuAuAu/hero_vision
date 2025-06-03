@@ -49,9 +49,9 @@ private:
   
   // 添加弹道参数
   double bullet_diameter_;  // 弹丸直径(m)
-  double bullet_mass_;     // 弹丸质量(kg)
-  double air_density_;     // 空气密度(kg/m^3)
-  double drag_coef_;      // 阻力系数
+  double bullet_mass_;      // 弹丸质量(kg)
+  double air_density_;      // 空气密度(kg/m^3)
+  double drag_coef_;        // 阻力系数
   
   // 添加射击控制参数
   double max_pitch_err_;  // 最大允许俯仰角误差

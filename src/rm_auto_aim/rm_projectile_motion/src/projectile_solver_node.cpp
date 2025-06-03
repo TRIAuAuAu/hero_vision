@@ -37,7 +37,7 @@ ProjectileSolverNode::ProjectileSolverNode(const rclcpp::NodeOptions & options)
   air_density_ = declare_parameter("air_density", 1.169);          // 空气密度(kg/m^3)  1.225(标准值) 温度升高需降低该值
   drag_coef_ = declare_parameter("drag_coef", 0.47);               // 球形弹丸阻力系数
   
-  // 计算空气阻力系数
+  // 计算空气阻力系数e
   double bullet_area = M_PI * std::pow(bullet_diameter_ / 2.0, 2);
   friction_k_ = (drag_coef_ * air_density_ * bullet_area) / (2.0 * bullet_mass_);
   

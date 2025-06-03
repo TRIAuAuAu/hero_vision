@@ -99,9 +99,15 @@ bool Detector::isLight(const Light & light)
   float ratio = light.width / light.length;
   bool ratio_ok = l.min_ratio < ratio && ratio < l.max_ratio;
 
+  if(!ratio_ok) std::cout<<"ratio_ok is false."<<std::endl; // debug
+
   bool angle_ok = light.tilt_angle < l.max_angle;
 
+  if(!angle_ok) std::cout<<"angle_ok is false."<<std::endl; // debug
+
   bool is_light = ratio_ok && angle_ok;
+
+  if(!is_light) std::cout<<"is_light is false."<<std::endl; // debug
 
   // Fill in debug information
   auto_aim_interfaces::msg::DebugLight light_data;
@@ -167,6 +173,8 @@ ArmorType Detector::isArmor(const Light & light_1, const Light & light_2)
                                                              : light_2.length / light_1.length;
   bool light_ratio_ok = light_length_ratio > a.min_light_ratio;
 
+  if(!light_ratio_ok) std::cout<<"Armor/ light_ratio_ok is false."<<std::endl; // debug
+
   // Distance between the center of 2 lights (unit : light length)
   float avg_light_length = (light_1.length + light_2.length) / 2;
   float center_distance = cv::norm(light_1.center - light_2.center) / avg_light_length;
@@ -175,12 +183,19 @@ ArmorType Detector::isArmor(const Light & light_1, const Light & light_2)
                             (a.min_large_center_distance <= center_distance &&
                              center_distance < a.max_large_center_distance);
 
+  if(!center_distance_ok) std::cout<<"Armor/ center_distance_ok is false."<<std::endl; // debug
+
   // Angle of light center connection
   cv::Point2f diff = light_1.center - light_2.center;
   float angle = std::abs(std::atan(diff.y / diff.x)) / CV_PI * 180;
   bool angle_ok = angle < a.max_angle;
 
+  if(!angle_ok) std::cout<<"Armor/ angle_ok is false."<<std::endl; // debug
+  
   bool is_armor = light_ratio_ok && center_distance_ok && angle_ok;
+
+  if(!is_armor) std::cout<<"Armor/ is_armor is false."<<std::endl; // debug
+
 
   // Judge armor type
   ArmorType type;
@@ -232,6 +247,8 @@ void Detector::drawResults(cv::Mat & img)
   for (const auto & armor : armors_) {
     cv::line(img, armor.left_light.top, armor.right_light.bottom, cv::Scalar(0, 255, 0), 2);
     cv::line(img, armor.left_light.bottom, armor.right_light.top, cv::Scalar(0, 255, 0), 2);
+
+    std::cout<<"Armors has been drew."<<std::endl; // debug
   }
 
   // Show numbers and confidence
